@@ -6,6 +6,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
 
+from hermes.exceptions import MissingFieldError, NoRecipientError
+
 
 class HermesMail:
     """
@@ -23,6 +25,8 @@ class HermesMailBuilder:
 
         self.sender = None
         self.display_name = None
+        self.subject_added = False
+        self.body_added = False
         self.recipients: list[str] = []
         self.cc_recipients: list[str] = []
         self.bcc_recipients: list[str] = []
@@ -69,6 +73,7 @@ class HermesMailBuilder:
         """
         Sets the subject of the mail.
         """
+        self.subject_added = True
         self.message["Subject"] = subject
         return self
 
@@ -77,6 +82,7 @@ class HermesMailBuilder:
         Sets the HTML body of the message. Note that not all HTML works with email so be sure to send a test email
         first. Sometimes, the emails could vary by client so test with some variety (Gmail, Yahoo, Outlook, Outlook Web)
         """
+        self.body_added = True
         self.message.attach(MIMEText(html_body, "html"))
         return self
 
@@ -99,11 +105,23 @@ class HermesMailBuilder:
         """
         Creates the HermesMail object to be sent.
         """
+        if self.display_name is None:
+            raise MissingFieldError("Display Name")
+        elif self.sender is None:
+            raise MissingFieldError("From Email")
         self.message["From"] = formataddr((self.display_name, self.sender))
 
         # Merge recipients into csv
+        all_recipients: list[str] = self.recipients + self.cc_recipients + self.bcc_recipients
+        if len(all_recipients) == 0:
+            raise NoRecipientError()
         self.message["To"] = ",".join(self.recipients)
         self.message["Cc"] = ",".join(self.cc_recipients)
         self.message["Bcc"] = ",".join(self.bcc_recipients)
 
-        return HermesMail(self.message, self.recipients + self.cc_recipients + self.bcc_recipients)
+        if not self.body_added:
+            raise MissingFieldError("Message Body")
+        if not self.subject_added:
+            raise MissingFieldError("Subject")
+
+        return HermesMail(self.message, all_recipients)
