@@ -2,7 +2,7 @@ import smtplib
 from unittest.mock import MagicMock, patch
 import pytest
 
-from hermes.Hermes import Hermes
+from hermes.lib.Hermes import Hermes
 
 
 @pytest.fixture

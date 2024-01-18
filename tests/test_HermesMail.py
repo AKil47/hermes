@@ -1,7 +1,7 @@
 import pytest
 
-from hermes.HermesMail import HermesMailBuilder
-from hermes.exceptions import MissingFieldError, NoRecipientError
+from hermes.lib.HermesMail import HermesMailBuilder
+from hermes.lib.exceptions import MissingFieldError, NoRecipientError
 
 
 class TestMissingFields:

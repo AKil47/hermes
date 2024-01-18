@@ -1,1 +1,1 @@
-from hermes.Hermes import Hermes
+from hermes.lib.Hermes import Hermes
