@@ -23,11 +23,11 @@ class HermesMailBuilder:
         self.cc_recipients: list[str] = []
         self.bcc_recipients: list[str] = []
 
-    def add_sender(self, sender: str):
+    def add_sender(self, sender: str) -> HermesMailBuilder:
         self.sender = sender
         return self
 
-    def add_display_name(self, display_name: str):
+    def add_display_name(self, display_name: str) -> HermesMailBuilder:
         self.display_name = display_name
         return self
 
