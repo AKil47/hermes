@@ -29,3 +29,4 @@ class Hermes:
     def send_mails(self):
         for mail in self.mails:
             self.server.sendmail(self.sender, mail.recipients, mail.mail.as_string())
+        self.mails.clear()
