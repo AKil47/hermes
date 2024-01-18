@@ -20,8 +20,8 @@ class Hermes:
 
     def mail_builder(self) -> HermesMailBuilder:
         return (HermesMailBuilder()
-                .add_sender(self.sender)
-                .add_display_name(self.display_name))
+                .set_sender(self.sender)
+                .set_display_name(self.display_name))
 
     def add_email(self, mail: HermesMail):
         self.mails.append(mail)
