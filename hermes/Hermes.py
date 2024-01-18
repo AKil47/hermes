@@ -1,4 +1,5 @@
 import smtplib
+import sys
 
 from hermes.HermesMail import HermesMailBuilder, HermesMail
 
@@ -21,12 +22,20 @@ class Hermes:
         self.mails: list[HermesMail] = []
 
         # Initialize Connection
-        self.server = smtplib.SMTP(host=smtp_server, port=smtp_port)
-        self.server.connect(host=smtp_server, port=smtp_port)
-        self.server.ehlo()
-        self.server.starttls()  # this is needed to get past spam filters
-        self.server.ehlo()
-        self.server.login(sender_email, password)
+        try:
+            self.server = smtplib.SMTP(host=smtp_server, port=smtp_port, timeout=60)
+            self.server.connect(host=smtp_server, port=smtp_port)
+            self.server.ehlo()
+            self.server.starttls()  # this is needed to get past spam filters
+            self.server.ehlo()
+            self.server.login(sender_email, password)
+        except (smtplib.SMTPConnectError, TimeoutError) as error:
+            raise ConnectionError("Couldn't connect to SMTP Server. Check that server settings are correct") from error
+        except (smtplib.SMTPNotSupportedError, smtplib.SMTPHeloError) as error:
+            raise ConnectionError("Server isn't communicating properly. Is it actually an SMTP Server?")
+        except smtplib.SMTPAuthenticationError as error:
+            raise ConnectionError("Couldn't login properly. Check that the username and password is correct. Note "
+                                  "that SMTP password might be different than normal email password") from error
 
     def mail_builder(self) -> HermesMailBuilder:
         """
