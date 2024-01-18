@@ -8,6 +8,10 @@ from email.utils import formataddr
 
 
 class HermesMail:
+    """
+    Object that holds mail constructed MIMEMultipart Message and recipients. In general, this object should be built
+    using a HermesMailBuilder that is generated from a Hermes instance.
+    """
     def __init__(self, mail: MIMEMultipart, recipients: list[str]):
         self.mail = mail
         self.recipients = recipients
@@ -24,34 +28,66 @@ class HermesMailBuilder:
         self.bcc_recipients: list[str] = []
 
     def set_sender(self, sender: str) -> HermesMailBuilder:
+        """
+        Sets the "from" header of the email. This should NOT be needed to be called directly
+        """
         self.sender = sender
         return self
 
     def set_display_name(self, display_name: str) -> HermesMailBuilder:
+        """
+        Sets the "display name" header of the email (who it says the email is from). This method should only be called
+        if the Display Name for this individual email should be different. Consider changing the display name of the
+        overall Hermes object that constructs this.
+        """
         self.display_name = display_name
         return self
 
     def add_recipient(self, recipient: str) -> HermesMailBuilder:
+        """
+        Adds a normal recipient (shows up in the "To" field of the email)
+        """
         self.recipients.append(recipient)
         return self
 
     def add_cc_recipient(self, cc_recipient: str) -> HermesMailBuilder:
+        """
+        Adds a CC recipient (shows up in the "CC" field of the email)
+        """
         self.cc_recipients.append(cc_recipient)
         return self
 
     def add_bcc_recipient(self, bcc_recipient: str) -> HermesMailBuilder:
+        """
+        Adds a BCC recipient (shows up in the "CC" field of the email). It's a good idea to use this for blast emails
+        instead of sending multiple individual emails.
+        """
         self.bcc_recipients.append(bcc_recipient)
         return self
 
     def set_subject(self, subject: str) -> HermesMailBuilder:
+        """
+        Sets the subject of the mail.
+        """
         self.message["Subject"] = subject
         return self
 
     def set_html_body(self, html_body: str) -> HermesMailBuilder:
+        """
+        Sets the HTML body of the message. Note that not all HTML works with email so be sure to send a test email
+        first. Sometimes, the emails could vary by client so test with some variety (Gmail, Yahoo, Outlook, Outlook Web)
+        """
         self.message.attach(MIMEText(html_body, "html"))
         return self
 
     def add_attachment(self, filename: str, file_data: bytes) -> HermesMailBuilder:
+        """
+        Adds an attachment to the email. This *should* work for most common file types, but be sure to send a test email.
+        Some filetypes get caught by virus detectors and spam filters.
+
+        :param filename: The name to send the filename as
+        :param file_data: The byte stream of the data (open the file in binary mode)
+        """
         attachment = MIMEBase("application", "octet-stream")
         attachment.set_payload(file_data)
         encoders.encode_base64(attachment)
@@ -60,6 +96,9 @@ class HermesMailBuilder:
         return self
 
     def build(self) -> HermesMail:
+        """
+        Creates the HermesMail object to be sent.
+        """
         self.message["From"] = formataddr((self.display_name, self.sender))
 
         # Merge recipients into csv
