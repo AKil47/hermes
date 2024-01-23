@@ -161,3 +161,4 @@ cython_debug/
 
 # dotenv file
 hermes.env
+/hermes.toml
